@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>臺北市河川水位即時資料</title>
+</head>
+
+<body>
+    <h2>臺北市 河川水位即時資料</h2>
+    <p>
+        <label for="fName">檔名：</label>
+        <input id="fName" type="text" value="river.json">
+        <button id="toFetch" onclick="toFetch()">讀取</button>
+    </p>
+    <textarea id="fContent" rows="10" style="width:99%"></textarea>
+
+    <script>
+        let fContent = document.getElementById('fContent');
+        let fName = document.getElementById('fName');
+        var obj;
+
+        function toFetch() {
+            fetch(fName.value)
+                .then(response => response.text())
+                .then(data => {
+                    obj = JSON.parse(data);
+                    let s = "";
+                    for (let i = 0, cnt = obj.count; i < cnt; i++) {
+                        let r = obj.data[i];
+                        s += `[${r.stationNo}] ${r.stationName}: ${r.levelOut}m\n`;
+                    }
+                    fContent.value = s;
+                })
+                .catch(error => {
+                    console.log('Error:', error);
+                });
+        }
+    </script>
+
+</body>
+
+</html>

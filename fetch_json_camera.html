@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>全國測速執法設置點</title>
+</head>
+
+<body>
+    <h2>全國 測速執法設置點</h2>
+    <p>
+        <label for="fName">檔名：</label>
+        <input id="fName" type="text" value="camera.json">
+        <button id="toFetch" onclick="toFetch()">讀取</button>
+    </p>
+    <textarea id="fContent" rows="10" style="width:99%"></textarea>
+
+    <script>
+        let fContent = document.getElementById('fContent');
+        let fName = document.getElementById('fName');
+        var obj;
+
+        function toFetch() {
+            fetch(fName.value)
+                .then(response => response.text())
+                .then(data => {
+                    obj = JSON.parse(data);
+                    let s = "";
+                    for (let i = 0, cnt = obj.result.total; i < cnt; i++) {
+                        let r = obj.result.records[i];
+                        let lon = parseFloat(r.Longitude).toFixed(6);
+                        let lat = parseFloat(r.Latitude).toFixed(6);
+                        s += `${i} [ ${lon} , ${lat} ] : ${r.limit} km/hr @ ${r.Address} ~ ${r.direct}\n`;
+                    }
+                    fContent.value = s;
+                })
+                .catch(error => {
+                    console.log('Error:', error);
+                });
+        }
+    </script>
+
+</body>
+
+</html>
