@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<!--
+geo_get.html
+Version: 1.2  @2023/05/27
+Wenchin Hsieh @Goomo.Net Studio, wenchin@goomo.net
+-->
+
+<html lang="zh-tw">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Get GeoLocation</title>
+    <link href="index.css" rel="stylesheet">
+</head>
+
+<body>
+    <h2>Get GeoLocation</h2>
+    <button onclick="getLocation()">Get</button>
+    <p id="result"></p>
+
+    <script>
+        var x = document.getElementById("result");
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                x.innerHTML = "您使用的 Browser 不支援 GeoLocation API！";
+            }
+        }
+
+        function showPosition(position) {
+            const lat = position.coords.latitude.toFixed(6);
+            const lon = position.coords.longitude.toFixed(6);
+            gmap = `https://www.google.com/maps/@${lat},${lon},17z`;
+            x.innerHTML = `<a href="${gmap}" target="_blank">緯度: ${lat}，經度: ${lon}</a>`;
+        }
+
+        function showError(error) {
+            x.innerHTML = '[Error: ' + error.code + '] ' + error.message;
+        }
+    </script>
+
+</body>
+
+</html>
