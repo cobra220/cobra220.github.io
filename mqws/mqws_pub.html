@@ -1,0 +1,101 @@
+<!doctype html>
+<!--
+mqws_pub.html
+Version: 2.0.2  @2023/05/21
+Wenchin Hsieh @Goomo.Net Studio, wenchin@goomo.net
+-->
+
+<html lang="zh-tw">
+<head>
+    <title>Publish MQTT Over WebSocket</title>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script>
+        //var mqServer = "ws://test.mosquitto.org:8080";
+        //var mqServer = "wss://test.mosquitto.org:8081";
+        //var mqServer = "ws://broker.mqttgo.io:8000/mqtt"
+        var mqServer   = "wss://broker.mqttgo.io:8084/mqtt"
+        var mqUser     = "";
+        var mqPwd      = "";
+        var pubTopic   = "Maker/YourName/Color1";
+        var pubPayload = "yellow";
+
+        var mqClient, mqOpt;
+
+        var onConnect = function () {
+            console.log('MQTT Server Connected.');
+
+            document.getElementById("connection").textContent = "Connected";
+            document.getElementById("connection").style.color = "#0C0";
+        }
+
+        function mqttConnecting() {
+            console.log('Connecting MQTT Server.');
+
+            mqServer = document.getElementById("mqServer").value;
+            mqUser = document.getElementById("user").value;
+            mqPwd = document.getElementById("pwd").value;
+            mqOpt = { username: mqUser, password: mqPwd };
+            mqClient = mqtt.connect(mqServer, mqOpt);
+            //mqClient = mqtt.connect(mqServer); // 若不需要帳密，請將上行更換為此行！
+
+            mqClient.on('connect', onConnect);
+        }
+
+        function initMqtt() {
+            document.getElementById("mqServer").value = mqServer
+            document.getElementById("user").value = mqUser
+            document.getElementById("pwd").value = mqPwd
+            document.getElementById("pubTopic").value = pubTopic
+            document.getElementById("pubPayload").value = pubPayload            
+
+            mqttConnecting();
+        }
+
+        function mqttQuit() {
+            document.getElementById("connection").textContent = "Offline";
+            document.getElementById("connection").style.color = "#F00";
+
+            mqClient.end();
+            console.log('Quit MQTT Server.');
+        }
+
+        function mqttPublish() {
+            console.log('Publishing [' + pubTopic + '] ' + pubPayload);
+
+            pubTopic = document.getElementById("pubTopic").value;
+            pubPayload = document.getElementById("pubPayload").value;
+            mqClient.publish(pubTopic, pubPayload);
+        }
+    </script>
+</head>
+
+<body onload="initMqtt()">
+    <h2>Publish MQTT Over WebSocket</h2>
+    <hr />
+
+    <h4>Server / Broker 伺服器</h4>
+    <label for="mqServer">URI: </label>
+    <input type="text" id="mqServer" size="35">
+    <span id="connection" style="color: #F00">Off</span>
+    <br />
+    <label for="user">User: </label>
+    <input type="text" id="user" size="10">
+    <br />
+    <label for="pwd">Pwd: </label>
+    <input type="password" id="pwd" size="10">
+    <h6 style="color: grey">按下 [F12] 鍵，可在「開發人員工具 ～ 主控台」中觀察完整的 Log。</h6>
+    <button id="quit" onclick="mqttQuit()">退出連線</button>
+    <button id="connect" onclick="mqttConnecting()">重新連線</button>
+    <br /><br />
+    <hr />
+
+    <h4>Publish 發行</h4>
+    <label for="pubTopic">Topic: </label>
+    <input type="text" id="pubTopic" size="30">
+    <br />
+    <label for="pubPayload">Payload: </label>
+    <input type="text" id="pubPayload">
+    <h6 style="color: grey">可將 Topic 中的 Color1 改為 Color2，亦可修改 Payload 中的顏色定義，如： red, purple, #A8F, #DD6688。</h6>
+    <button id="publish" onclick="mqttPublish()">傳送</button>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!doctype html>
+<!--
+mqws_sub.html
+Version: 2.0.2  @2023/05/21
+Wenchin Hsieh @Goomo.Net Studio, wenchin@goomo.net
+-->
+
+<html lang="zh-tw">
+<head>
+    <title>Subscribe MQTT Over WebSocket</title>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script>
+        //var mqServer = "ws://test.mosquitto.org:8080";
+        //var mqServer = "wss://test.mosquitto.org:8081";
+        //var mqServer = "ws://broker.mqttgo.io:8000/mqtt"
+        var mqServer   = "wss://broker.mqttgo.io:8084/mqtt"
+        var mqUser     = "";
+        var mqPwd      = "";
+        var subTopic1  = "Maker/YourName/Color1";
+        var subTopic2  = "Maker/YourName/Color2";
+
+        var mqClient, mqOpt;
+
+        var onMessage = function (topic, payload) {
+            console.log('Received [' + topic + '] ' + payload);
+
+            let dt = new Date();
+            document.getElementById("subLog").value = 
+                dt.toLocaleString() + ' [' + topic + ']\n' + payload + '\n' + 
+                document.getElementById("subLog").value;
+
+            if (topic == subTopic1)
+                document.getElementById("divColor1").style.backgroundColor = payload;
+            else if (topic == subTopic2)
+                document.getElementById("divColor2").style.backgroundColor = payload;
+        }
+
+        var onConnect = function () {
+            console.log('MQTT Server Connected.');
+
+            document.getElementById("connection").textContent = "Connected";
+            document.getElementById("connection").style.color = "#0C0";
+
+            subTopic1 = document.getElementById("subTopic1").value;
+            subTopic2 = document.getElementById("subTopic2").value;
+
+            if (mqClient.subscribe(subTopic1))
+                console.log('Topic [' + subTopic1 + '] subscribed.');
+            if (mqClient.subscribe(subTopic2))
+                console.log('Topic [' + subTopic2 + '] subscribed.');
+
+            mqClient.on("message", onMessage);
+        }
+
+        function mqttConnecting() {
+            console.log('Connecting MQTT Server.');
+
+            mqServer = document.getElementById("mqServer").value;
+            mqUser = document.getElementById("user").value;
+            mqPwd = document.getElementById("pwd").value;
+            mqOpt = { username: mqUser, password: mqPwd };
+            mqClient = mqtt.connect(mqServer, mqOpt);
+            //mqClient = mqtt.connect(mqServer); // 若不需要帳密，請將上行更換為此行！
+
+            mqClient.on('connect', onConnect);
+        }
+
+        function initMqtt() {
+            document.getElementById("mqServer").value = mqServer
+            document.getElementById("user").value = mqUser
+            document.getElementById("pwd").value = mqPwd
+            document.getElementById("subTopic1").value = subTopic1
+            document.getElementById("subTopic2").value = subTopic2
+
+            mqttConnecting();
+        }
+
+        function mqttQuit() {
+            document.getElementById("connection").textContent = "Offline";
+            document.getElementById("connection").style.color = "#F00";
+            document.getElementById("subLog").value = "";
+
+            mqClient.end();
+            console.log('Quit MQTT Server.');
+        }
+
+    </script>
+</head>
+
+<body onload="initMqtt()">
+    <h2>Subscribe MQTT Over WebSocket</h2>
+    <hr />
+
+    <h4>Server / Broker 伺服器</h4>
+    <label for="mqServer">URI: </label>
+    <input type="text" id="mqServer" size="35">
+    <span id="connection" style="color: #F00">Off</span>
+    <br />
+    <label for="user">User: </label>
+    <input type="text" id="user" size="10">
+    <br />
+    <label for="pwd">Pwd: </label>
+    <input type="password" id="pwd" size="10">
+    <h6 style="color: grey">按下 [F12] 鍵，可在「開發人員工具 ～ 主控台」中觀察完整的 Log。</h6>
+    <button id="quit" onclick="mqttQuit()">退出連線</button>
+    <button id="connect" onclick="mqttConnecting()">重新連線＆訂閱</button>
+    <br /><br />
+    <hr />
+
+    <h4>Subscribe 訂閱</h4>
+    <div id="divColor1">
+        <label for="subTopic1">Topic 1: </label>
+        <input type="text" id="subTopic1" size="30">
+    </div>
+    <div id="divColor2">
+        <label for="subTopic2">Topic 2: </label>
+        <input type="text" id="subTopic2" size="30">
+    </div>
+    <h6 style="color: grey">變更 Subscribe Topic 的內容後，需 [退出連線] 再 [重新連線＆訂閱] 始能生效！<br />若 訂閱的 Topic 與發行的 Topic 相同，則可觀察到區塊顏色隨著 Payload 值而變化。</h6>
+
+    <textarea id="subLog" style="width:800px; height:400px;"></textarea>
+</body>
+</html>
